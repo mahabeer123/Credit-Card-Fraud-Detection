@@ -480,14 +480,14 @@ def scenario_explorer():
     transaction = generate_sample_transaction()
     
     # Create subplots
-    fig = make_subplots(
-        rows=2, cols=2,
-        subplot_titles=("Amount Impact", "Time Impact", "Distance Impact", "Age Impact"),
-        specs=[[{"secondary_y": False}, {"secondary_y": False}],
-               [{"secondary_y": False}, {"secondary_y": False}]]
-    )
-    
     try:
+        fig = make_subplots(
+            rows=2, cols=2,
+            subplot_titles=("Amount Impact", "Time Impact", "Distance Impact", "Age Impact"),
+            specs=[[{"secondary_y": False}, {"secondary_y": False}],
+                   [{"secondary_y": False}, {"secondary_y": False}]]
+        )
+        
         # Amount impact
         amounts = list(range(1, 1001, 50))
         prob_amounts = []
@@ -538,7 +538,7 @@ def scenario_explorer():
         
     except Exception as e:
         st.error(f"❌ Error generating scenario analysis: {str(e)}")
-        st.info("💡 This feature requires model predictions. Using fallback data for demonstration.")
+        st.info("💡 Using fallback data for demonstration.")
         
         # Create a simple fallback visualization
         import numpy as np
@@ -556,20 +556,36 @@ def scenario_explorer():
         ages = list(range(18, 81, 5))
         prob_ages = [0.07 + 0.03 * np.sin((age-18)/63 * 2 * np.pi) for age in ages]
         
-        fig = make_subplots(
-            rows=2, cols=2,
-            subplot_titles=("Amount Impact", "Time Impact", "Distance Impact", "Age Impact"),
-            specs=[[{"secondary_y": False}, {"secondary_y": False}],
-                   [{"secondary_y": False}, {"secondary_y": False}]]
-        )
-        
-        fig.add_trace(go.Scatter(x=amounts, y=prob_amounts, name="Amount"), row=1, col=1)
-        fig.add_trace(go.Scatter(x=hours, y=prob_hours, name="Time"), row=1, col=2)
-        fig.add_trace(go.Scatter(x=distances, y=prob_distances, name="Distance"), row=2, col=1)
-        fig.add_trace(go.Scatter(x=ages, y=prob_ages, name="Age"), row=2, col=2)
-        
-        fig.update_layout(height=600, showlegend=False)
-        st.plotly_chart(fig, use_container_width=True)
+        try:
+            fig = make_subplots(
+                rows=2, cols=2,
+                subplot_titles=("Amount Impact", "Time Impact", "Distance Impact", "Age Impact"),
+                specs=[[{"secondary_y": False}, {"secondary_y": False}],
+                       [{"secondary_y": False}, {"secondary_y": False}]]
+            )
+            
+            fig.add_trace(go.Scatter(x=amounts, y=prob_amounts, name="Amount"), row=1, col=1)
+            fig.add_trace(go.Scatter(x=hours, y=prob_hours, name="Time"), row=1, col=2)
+            fig.add_trace(go.Scatter(x=distances, y=prob_distances, name="Distance"), row=2, col=1)
+            fig.add_trace(go.Scatter(x=ages, y=prob_ages, name="Age"), row=2, col=2)
+            
+            fig.update_layout(height=600, showlegend=False)
+            st.plotly_chart(fig, use_container_width=True)
+            
+        except Exception as e2:
+            st.error(f"❌ Error creating fallback visualization: {str(e2)}")
+            st.info("💡 Feature temporarily unavailable. Please try again later.")
+            
+            # Show simple metrics instead
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("Amount Impact", "High", "Larger amounts = Higher risk")
+            with col2:
+                st.metric("Time Impact", "Medium", "Night transactions = Higher risk")
+            with col3:
+                st.metric("Distance Impact", "High", "Longer distances = Higher risk")
+            with col4:
+                st.metric("Age Impact", "Low", "Age has minimal effect")
 
 def batch_analysis():
     """Batch Analysis - CSV upload and analysis"""
