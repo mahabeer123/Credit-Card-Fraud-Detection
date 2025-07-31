@@ -548,7 +548,7 @@ def scenario_explorer():
     )
     
     # Amount impact
-    amounts = range(1, 1001, 50)
+    amounts = list(range(1, 1001, 50))
     prob_amounts = []
     for amt in amounts:
         temp_transaction = transaction.copy()
@@ -559,7 +559,7 @@ def scenario_explorer():
     fig.add_trace(go.Scatter(x=amounts, y=prob_amounts, name="Amount"), row=1, col=1)
     
     # Time impact
-    hours = range(24)
+    hours = list(range(24))
     prob_hours = []
     for hr in hours:
         temp_transaction = transaction.copy()
@@ -570,7 +570,7 @@ def scenario_explorer():
     fig.add_trace(go.Scatter(x=hours, y=prob_hours, name="Time"), row=1, col=2)
     
     # Distance impact
-    distances = range(0, 1001, 50)
+    distances = list(range(0, 1001, 50))
     prob_distances = []
     for dist in distances:
         temp_transaction = transaction.copy()
@@ -582,7 +582,7 @@ def scenario_explorer():
     fig.add_trace(go.Scatter(x=distances, y=prob_distances, name="Distance"), row=2, col=1)
     
     # Age impact
-    ages = range(18, 81, 5)
+    ages = list(range(18, 81, 5))
     prob_ages = []
     for age_val in ages:
         temp_transaction = transaction.copy()
