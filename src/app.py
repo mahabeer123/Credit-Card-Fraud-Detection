@@ -238,23 +238,29 @@ def predict_fraud(transaction_data, model, scaler):
         transaction_data['merch_lat'], transaction_data['merch_long']
     )
     
-    # Prepare features
+    # Prepare features in the exact same order as training
+    # Feature order: ['cc_num', 'amt', 'zip', 'lat', 'long', 'city_pop', 'unix_time', 'merch_lat', 'merch_long', 'trans_hour', 'trans_day_of_week', 'trans_month', 'age', 'distance']
     features = [
-        transaction_data['cc_num'],
-        transaction_data['amt'],
-        transaction_data['zip'],
-        transaction_data['lat'],
-        transaction_data['long'],
-        transaction_data['city_pop'],
-        transaction_data['unix_time'],
-        transaction_data['merch_lat'],
-        transaction_data['merch_long'],
-        transaction_data['trans_hour'],
-        transaction_data['trans_day_of_week'],
-        transaction_data['trans_month'],
-        transaction_data['age'],
-        distance
+        float(transaction_data['cc_num']),
+        float(transaction_data['amt']),
+        float(transaction_data['zip']),
+        float(transaction_data['lat']),
+        float(transaction_data['long']),
+        float(transaction_data['city_pop']),
+        float(transaction_data['unix_time']),
+        float(transaction_data['merch_lat']),
+        float(transaction_data['merch_long']),
+        float(transaction_data['trans_hour']),
+        float(transaction_data['trans_day_of_week']),
+        float(transaction_data['trans_month']),
+        float(transaction_data['age']),
+        float(distance)
     ]
+    
+    # Ensure we have exactly 14 features
+    if len(features) != 14:
+        st.error(f"❌ Expected 14 features, got {len(features)}")
+        return 0.0, False
     
     # Scale features
     features_scaled = scaler.transform([features])
