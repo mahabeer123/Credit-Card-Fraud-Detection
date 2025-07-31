@@ -59,6 +59,8 @@ Thumbs.db
 # Model files (can be regenerated)
 models/*.pkl
 models/*.joblib
+!src/models/*.pkl
+!src/models/*.joblib
 
 # Logs
 *.log
