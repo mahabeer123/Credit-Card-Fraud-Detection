@@ -70,6 +70,7 @@ logs/
 
 # Streamlit
 .streamlit/
+!.streamlit/config.toml
 
 # Plotly
 .plotly/ 
