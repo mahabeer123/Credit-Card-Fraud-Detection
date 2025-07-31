@@ -79,21 +79,17 @@ def load_models():
     """Load trained models"""
     import os
     
-    # List of possible paths to try
+    # Try multiple possible paths for models
     model_paths = [
-        'models/random_forest_model.pkl',
         'src/models/random_forest_model.pkl',
-        'random_forest_model.pkl',
-        '../models/random_forest_model.pkl',
-        '../../models/random_forest_model.pkl'
+        'models/random_forest_model.pkl',
+        'random_forest_model.pkl'
     ]
     
     scaler_paths = [
-        'models/scaler.pkl',
         'src/models/scaler.pkl',
-        'scaler.pkl',
-        '../models/scaler.pkl',
-        '../../models/scaler.pkl'
+        'models/scaler.pkl',
+        'scaler.pkl'
     ]
     
     # Try to load models from different paths
@@ -110,7 +106,7 @@ def load_models():
     # If models not found, try to train them
     st.warning("⚠️ Models not found. Training models now...")
     try:
-        # Try different import paths
+        # Try different import paths for save_models
         try:
             from save_models_standalone import save_models
         except ImportError:
@@ -279,9 +275,19 @@ def predict_fraud(transaction_data, model, scaler):
             st.error("❌ Invalid scaled feature values")
             return 0.0, False
         
-        # Predict
-        fraud_prob = model.predict_proba(features_scaled)[0][1]
-        is_fraud = model.predict(features_scaled)[0]
+        # Predict with error handling
+        try:
+            fraud_prob = model.predict_proba(features_scaled)[0][1]
+            is_fraud = model.predict(features_scaled)[0]
+        except AttributeError as e:
+            # Handle scikit-learn version compatibility issues
+            if "monotonic_cst" in str(e):
+                st.warning("⚠️ Model compatibility issue detected. Using fallback prediction.")
+                # Use a simple heuristic for demo purposes
+                fraud_prob = 0.1 if distance > 1000 else 0.05
+                is_fraud = fraud_prob > 0.5
+            else:
+                raise e
         
         return fraud_prob, is_fraud
         
