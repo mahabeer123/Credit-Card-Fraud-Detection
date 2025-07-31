@@ -77,34 +77,101 @@ st.markdown("""
 @st.cache_resource
 def load_models():
     """Load trained models"""
-    try:
-        # Load the best model (Random Forest)
-        rf_model = joblib.load('models/random_forest_model.pkl')
-        scaler = joblib.load('models/scaler.pkl')
-        return rf_model, scaler
-    except:
-        # Try alternative path
+    import os
+    
+    # List of possible paths to try
+    model_paths = [
+        'models/random_forest_model.pkl',
+        'src/models/random_forest_model.pkl',
+        'random_forest_model.pkl',
+        '../models/random_forest_model.pkl',
+        '../../models/random_forest_model.pkl'
+    ]
+    
+    scaler_paths = [
+        'models/scaler.pkl',
+        'src/models/scaler.pkl',
+        'scaler.pkl',
+        '../models/scaler.pkl',
+        '../../models/scaler.pkl'
+    ]
+    
+    # Try to load models from different paths
+    for model_path, scaler_path in zip(model_paths, scaler_paths):
         try:
-            rf_model = joblib.load('src/models/random_forest_model.pkl')
-            scaler = joblib.load('src/models/scaler.pkl')
+            if os.path.exists(model_path) and os.path.exists(scaler_path):
+                rf_model = joblib.load(model_path)
+                scaler = joblib.load(scaler_path)
+                st.success(f"✅ Models loaded successfully from {model_path}")
+                return rf_model, scaler
+        except Exception as e:
+            continue
+    
+    # If models not found, try to train them
+    st.warning("⚠️ Models not found. Training models now...")
+    try:
+        from src.models.save_models import save_models
+        rf_model, scaler = save_models()
+        if rf_model is not None and scaler is not None:
+            st.success("✅ Models trained and loaded successfully!")
             return rf_model, scaler
-        except:
-            st.error("❌ Models not found! Please run the training pipeline first.")
-            return None, None
+    except Exception as e:
+        st.error(f"❌ Error training models: {str(e)}")
+    
+    st.error("❌ Models not found and could not be trained. Please check the model files.")
+    return None, None
 
 @st.cache_data
 def load_sample_data():
     """Load sample data for demonstrations"""
-    try:
-        data = pd.read_csv('../../data/fraudTrain.csv')
-        return data.sample(n=1000, random_state=42)
-    except:
-        # Try alternative path
+    import os
+    
+    # List of possible paths to try
+    data_paths = [
+        'data/fraudTrain.csv',
+        'src/data/fraudTrain.csv',
+        '../data/fraudTrain.csv',
+        '../../data/fraudTrain.csv',
+        'fraudTrain.csv'
+    ]
+    
+    for data_path in data_paths:
         try:
-            data = pd.read_csv('data/fraudTrain.csv')
-            return data.sample(n=1000, random_state=42)
-        except:
-            return None
+            if os.path.exists(data_path):
+                data = pd.read_csv(data_path)
+                return data.sample(n=1000, random_state=42)
+        except Exception as e:
+            continue
+    
+    # If data not found, create sample data
+    st.warning("⚠️ Sample data not found. Creating synthetic data for demo...")
+    return create_synthetic_data()
+
+def create_synthetic_data():
+    """Create synthetic data for demo when real data is not available"""
+    np.random.seed(42)
+    n_samples = 1000
+    
+    # Generate synthetic transaction data
+    data = {
+        'cc_num': np.random.randint(1000000000000000, 9999999999999999, n_samples),
+        'amt': np.random.exponential(50, n_samples),
+        'zip': np.random.randint(10000, 99999, n_samples),
+        'lat': np.random.uniform(25, 50, n_samples),
+        'long': np.random.uniform(-125, -65, n_samples),
+        'city_pop': np.random.randint(1000, 1000000, n_samples),
+        'unix_time': np.random.randint(1600000000, 1700000000, n_samples),
+        'merch_lat': np.random.uniform(25, 50, n_samples),
+        'merch_long': np.random.uniform(-125, -65, n_samples),
+        'trans_hour': np.random.randint(0, 24, n_samples),
+        'trans_day_of_week': np.random.randint(0, 7, n_samples),
+        'trans_month': np.random.randint(1, 13, n_samples),
+        'age': np.random.randint(18, 80, n_samples),
+        'distance': np.random.exponential(50, n_samples),
+        'is_fraud': np.random.choice([0, 1], n_samples, p=[0.995, 0.005])
+    }
+    
+    return pd.DataFrame(data)
 
 def generate_sample_transaction():
     """Generate a realistic sample transaction"""
