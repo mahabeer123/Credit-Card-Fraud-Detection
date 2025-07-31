@@ -232,44 +232,63 @@ def calculate_distance(lat1, long1, lat2, long2):
 
 def predict_fraud(transaction_data, model, scaler):
     """Predict fraud probability for a transaction"""
-    # Calculate distance feature
-    distance = calculate_distance(
-        transaction_data['lat'], transaction_data['long'],
-        transaction_data['merch_lat'], transaction_data['merch_long']
-    )
-    
-    # Prepare features in the exact same order as training
-    # Feature order: ['cc_num', 'amt', 'zip', 'lat', 'long', 'city_pop', 'unix_time', 'merch_lat', 'merch_long', 'trans_hour', 'trans_day_of_week', 'trans_month', 'age', 'distance']
-    features = [
-        float(transaction_data['cc_num']),
-        float(transaction_data['amt']),
-        float(transaction_data['zip']),
-        float(transaction_data['lat']),
-        float(transaction_data['long']),
-        float(transaction_data['city_pop']),
-        float(transaction_data['unix_time']),
-        float(transaction_data['merch_lat']),
-        float(transaction_data['merch_long']),
-        float(transaction_data['trans_hour']),
-        float(transaction_data['trans_day_of_week']),
-        float(transaction_data['trans_month']),
-        float(transaction_data['age']),
-        float(distance)
-    ]
-    
-    # Ensure we have exactly 14 features
-    if len(features) != 14:
-        st.error(f"❌ Expected 14 features, got {len(features)}")
+    try:
+        # Calculate distance feature
+        distance = calculate_distance(
+            transaction_data['lat'], transaction_data['long'],
+            transaction_data['merch_lat'], transaction_data['merch_long']
+        )
+        
+        # Prepare features in the exact same order as training
+        # Feature order: ['cc_num', 'amt', 'zip', 'lat', 'long', 'city_pop', 'unix_time', 'merch_lat', 'merch_long', 'trans_hour', 'trans_day_of_week', 'trans_month', 'age', 'distance']
+        features = [
+            float(transaction_data['cc_num']),
+            float(transaction_data['amt']),
+            float(transaction_data['zip']),
+            float(transaction_data['lat']),
+            float(transaction_data['long']),
+            float(transaction_data['city_pop']),
+            float(transaction_data['unix_time']),
+            float(transaction_data['merch_lat']),
+            float(transaction_data['merch_long']),
+            float(transaction_data['trans_hour']),
+            float(transaction_data['trans_day_of_week']),
+            float(transaction_data['trans_month']),
+            float(transaction_data['age']),
+            float(distance)
+        ]
+        
+        # Ensure we have exactly 14 features
+        if len(features) != 14:
+            st.error(f"❌ Expected 14 features, got {len(features)}")
+            return 0.0, False
+        
+        # Check for any NaN or infinite values
+        if any(np.isnan(features)) or any(np.isinf(features)):
+            st.error("❌ Invalid feature values detected")
+            return 0.0, False
+        
+        # Convert to numpy array and ensure correct shape
+        features_array = np.array(features, dtype=np.float64).reshape(1, -1)
+        
+        # Scale features
+        features_scaled = scaler.transform(features_array)
+        
+        # Check scaled features for NaN or infinite values
+        if np.any(np.isnan(features_scaled)) or np.any(np.isinf(features_scaled)):
+            st.error("❌ Invalid scaled feature values")
+            return 0.0, False
+        
+        # Predict
+        fraud_prob = model.predict_proba(features_scaled)[0][1]
+        is_fraud = model.predict(features_scaled)[0]
+        
+        return fraud_prob, is_fraud
+        
+    except Exception as e:
+        st.error(f"❌ Error in prediction: {str(e)}")
+        # Return default values
         return 0.0, False
-    
-    # Scale features
-    features_scaled = scaler.transform([features])
-    
-    # Predict
-    fraud_prob = model.predict_proba(features_scaled)[0][1]
-    is_fraud = model.predict(features_scaled)[0]
-    
-    return fraud_prob, is_fraud
 
 def live_fraud_monitor():
     """Live Fraud Monitor - Real-time transaction monitoring"""
