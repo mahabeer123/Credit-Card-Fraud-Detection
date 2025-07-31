@@ -173,26 +173,6 @@ Credit-Card-Fraud-Detection/
 
 ---
 
-## 🎮 **Demo Screenshots**
-
-<div align="center">
-
-### **🕵️ Live Fraud Monitor**
-*Real-time transaction monitoring with dynamic risk assessment*
-
-### **🎮 Fraud Detective Game**
-*Interactive learning with score tracking and feedback*
-
-### **🔬 Scenario Explorer**
-*What-if analysis with parameter impact visualization*
-
-### **📊 Batch Analysis**
-*CSV processing with comprehensive reporting*
-
-</div>
-
----
-
 ## 🚀 **Getting Started**
 
 ### **Prerequisites**
