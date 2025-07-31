@@ -466,7 +466,7 @@ def fraud_detective_game():
             st.rerun()
 
 def scenario_explorer():
-    """Scenario Explorer - Interactive parameter testing"""
+    """Scenario Explorer - Analyze how different factors affect fraud probability"""
     st.markdown('<h1 class="main-header">🔬 Scenario Explorer</h1>', unsafe_allow_html=True)
     
     # Load models
@@ -474,126 +474,102 @@ def scenario_explorer():
     if model is None:
         return
     
-    st.markdown("### 🎛️ Adjust Parameters and See Predictions Change!")
+    st.markdown("### 📊 Analyze How Different Factors Affect Fraud Probability")
     
-    # Create sliders for different parameters
-    col1, col2 = st.columns(2)
+    # Generate a base transaction
+    transaction = generate_sample_transaction()
     
-    with col1:
-        st.markdown("#### 💰 Transaction Amount")
-        amount = st.slider("Amount ($)", 1, 1000, 100, key="amount_slider")
-        
-        st.markdown("#### ⏰ Transaction Time")
-        hour = st.slider("Hour of Day", 0, 23, 12, key="hour_slider")
-        
-        st.markdown("#### 👤 Customer Age")
-        age = st.slider("Age", 18, 80, 35, key="age_slider")
-    
-    with col2:
-        st.markdown("#### 📍 Distance from Customer")
-        distance = st.slider("Distance (km)", 0, 1000, 50, key="distance_slider")
-        
-        st.markdown("#### 🏙️ City Population")
-        population = st.slider("City Population", 1000, 1000000, 100000, key="pop_slider")
-        
-        st.markdown("#### 📅 Day of Week")
-        day_of_week = st.slider("Day (0=Monday)", 0, 6, 2, key="day_slider")
-    
-    # Generate transaction with selected parameters
-    base_transaction = generate_sample_transaction()
-    transaction = {
-        'cc_num': base_transaction['cc_num'],
-        'amt': amount,
-        'zip': base_transaction['zip'],
-        'lat': base_transaction['lat'],
-        'long': base_transaction['long'],
-        'city_pop': population,
-        'unix_time': base_transaction['unix_time'],
-        'merch_lat': base_transaction['lat'] + (distance/111),  # Approximate
-        'merch_long': base_transaction['long'] + (distance/111),
-        'trans_hour': hour,
-        'trans_day_of_week': day_of_week,
-        'trans_month': base_transaction['trans_month'],
-        'age': age
-    }
-    
-    # Get prediction
-    fraud_prob, is_fraud = predict_fraud(transaction, model, scaler)
-    
-    # Display results
-    st.markdown("### 📊 Prediction Results:")
-    
-    col_result1, col_result2, col_result3 = st.columns(3)
-    
-    with col_result1:
-        if is_fraud:
-            st.markdown('<div class="warning-card"><h3>🚨 FRAUD</h3><p>High Risk</p></div>', unsafe_allow_html=True)
-        else:
-            st.markdown('<div class="success-card"><h3>✅ LEGITIMATE</h3><p>Low Risk</p></div>', unsafe_allow_html=True)
-    
-    with col_result2:
-        st.metric("Fraud Probability", f"{fraud_prob:.1%}")
-    
-    with col_result3:
-        st.metric("Risk Level", "High" if fraud_prob > 0.7 else "Medium" if fraud_prob > 0.3 else "Low")
-    
-    # Create interactive visualization
-    st.markdown("### 📈 Parameter Impact Analysis:")
-    
-    # Show how different parameters affect the prediction
+    # Create subplots
     fig = make_subplots(
         rows=2, cols=2,
-        subplot_titles=("Amount vs Fraud Probability", "Time vs Fraud Probability", 
-                       "Distance vs Fraud Probability", "Age vs Fraud Probability")
+        subplot_titles=("Amount Impact", "Time Impact", "Distance Impact", "Age Impact"),
+        specs=[[{"secondary_y": False}, {"secondary_y": False}],
+               [{"secondary_y": False}, {"secondary_y": False}]]
     )
     
-    # Amount impact
-    amounts = list(range(1, 1001, 50))
-    prob_amounts = []
-    for amt in amounts:
-        temp_transaction = transaction.copy()
-        temp_transaction['amt'] = amt
-        prob, _ = predict_fraud(temp_transaction, model, scaler)
-        prob_amounts.append(prob)
-    
-    fig.add_trace(go.Scatter(x=amounts, y=prob_amounts, name="Amount"), row=1, col=1)
-    
-    # Time impact
-    hours = list(range(24))
-    prob_hours = []
-    for hr in hours:
-        temp_transaction = transaction.copy()
-        temp_transaction['trans_hour'] = hr
-        prob, _ = predict_fraud(temp_transaction, model, scaler)
-        prob_hours.append(prob)
-    
-    fig.add_trace(go.Scatter(x=hours, y=prob_hours, name="Time"), row=1, col=2)
-    
-    # Distance impact
-    distances = list(range(0, 1001, 50))
-    prob_distances = []
-    for dist in distances:
-        temp_transaction = transaction.copy()
-        temp_transaction['merch_lat'] = transaction['lat'] + (dist/111)
-        temp_transaction['merch_long'] = transaction['long'] + (dist/111)
-        prob, _ = predict_fraud(temp_transaction, model, scaler)
-        prob_distances.append(prob)
-    
-    fig.add_trace(go.Scatter(x=distances, y=prob_distances, name="Distance"), row=2, col=1)
-    
-    # Age impact
-    ages = list(range(18, 81, 5))
-    prob_ages = []
-    for age_val in ages:
-        temp_transaction = transaction.copy()
-        temp_transaction['age'] = age_val
-        prob, _ = predict_fraud(temp_transaction, model, scaler)
-        prob_ages.append(prob)
-    
-    fig.add_trace(go.Scatter(x=ages, y=prob_ages, name="Age"), row=2, col=2)
-    
-    fig.update_layout(height=600, showlegend=False)
-    st.plotly_chart(fig, use_container_width=True)
+    try:
+        # Amount impact
+        amounts = list(range(1, 1001, 50))
+        prob_amounts = []
+        for amt in amounts:
+            temp_transaction = transaction.copy()
+            temp_transaction['amt'] = amt
+            prob, _ = predict_fraud(temp_transaction, model, scaler)
+            prob_amounts.append(prob)
+        
+        fig.add_trace(go.Scatter(x=amounts, y=prob_amounts, name="Amount"), row=1, col=1)
+        
+        # Time impact
+        hours = list(range(24))
+        prob_hours = []
+        for hr in hours:
+            temp_transaction = transaction.copy()
+            temp_transaction['trans_hour'] = hr
+            prob, _ = predict_fraud(temp_transaction, model, scaler)
+            prob_hours.append(prob)
+        
+        fig.add_trace(go.Scatter(x=hours, y=prob_hours, name="Time"), row=1, col=2)
+        
+        # Distance impact
+        distances = list(range(0, 1001, 50))
+        prob_distances = []
+        for dist in distances:
+            temp_transaction = transaction.copy()
+            temp_transaction['merch_lat'] = transaction['lat'] + (dist/111)
+            temp_transaction['merch_long'] = transaction['long'] + (dist/111)
+            prob, _ = predict_fraud(temp_transaction, model, scaler)
+            prob_distances.append(prob)
+        
+        fig.add_trace(go.Scatter(x=distances, y=prob_distances, name="Distance"), row=2, col=1)
+        
+        # Age impact
+        ages = list(range(18, 81, 5))
+        prob_ages = []
+        for age_val in ages:
+            temp_transaction = transaction.copy()
+            temp_transaction['age'] = age_val
+            prob, _ = predict_fraud(temp_transaction, model, scaler)
+            prob_ages.append(prob)
+        
+        fig.add_trace(go.Scatter(x=ages, y=prob_ages, name="Age"), row=2, col=2)
+        
+        fig.update_layout(height=600, showlegend=False)
+        st.plotly_chart(fig, use_container_width=True)
+        
+    except Exception as e:
+        st.error(f"❌ Error generating scenario analysis: {str(e)}")
+        st.info("💡 This feature requires model predictions. Using fallback data for demonstration.")
+        
+        # Create a simple fallback visualization
+        import numpy as np
+        
+        # Generate sample data for demonstration
+        amounts = list(range(1, 1001, 50))
+        prob_amounts = [0.05 + 0.1 * (amt/1000) for amt in amounts]
+        
+        hours = list(range(24))
+        prob_hours = [0.08 + 0.04 * np.sin(h/24 * 2 * np.pi) for h in hours]
+        
+        distances = list(range(0, 1001, 50))
+        prob_distances = [0.06 + 0.12 * (dist/1000) for dist in distances]
+        
+        ages = list(range(18, 81, 5))
+        prob_ages = [0.07 + 0.03 * np.sin((age-18)/63 * 2 * np.pi) for age in ages]
+        
+        fig = make_subplots(
+            rows=2, cols=2,
+            subplot_titles=("Amount Impact", "Time Impact", "Distance Impact", "Age Impact"),
+            specs=[[{"secondary_y": False}, {"secondary_y": False}],
+                   [{"secondary_y": False}, {"secondary_y": False}]]
+        )
+        
+        fig.add_trace(go.Scatter(x=amounts, y=prob_amounts, name="Amount"), row=1, col=1)
+        fig.add_trace(go.Scatter(x=hours, y=prob_hours, name="Time"), row=1, col=2)
+        fig.add_trace(go.Scatter(x=distances, y=prob_distances, name="Distance"), row=2, col=1)
+        fig.add_trace(go.Scatter(x=ages, y=prob_ages, name="Age"), row=2, col=2)
+        
+        fig.update_layout(height=600, showlegend=False)
+        st.plotly_chart(fig, use_container_width=True)
 
 def batch_analysis():
     """Batch Analysis - CSV upload and analysis"""
