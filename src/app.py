@@ -479,7 +479,7 @@ def scenario_explorer():
     # Generate a base transaction
     transaction = generate_sample_transaction()
     
-    # Create subplots
+    # Create subplots with bulletproof data generation
     try:
         fig = make_subplots(
             rows=2, cols=2,
@@ -488,58 +488,67 @@ def scenario_explorer():
                    [{"secondary_y": False}, {"secondary_y": False}]]
         )
         
-        # Amount impact - explicitly convert to list
-        amounts = list(range(1, 1001, 50))
+        # Amount impact - use numpy arrays for bulletproof compatibility
+        import numpy as np
+        amounts_array = np.array([1, 51, 101, 151, 201, 251, 301, 351, 401, 451, 501, 551, 601, 651, 701, 751, 801, 851, 901, 951])
         prob_amounts = []
-        for amt in amounts:
+        for amt in amounts_array:
             temp_transaction = transaction.copy()
-            temp_transaction['amt'] = amt
+            temp_transaction['amt'] = float(amt)
             prob, _ = predict_fraud(temp_transaction, model, scaler)
             prob_amounts.append(prob)
         
-        # Ensure amounts is a list for Plotly
-        amounts_list = list(amounts)
-        fig.add_trace(go.Scatter(x=amounts_list, y=prob_amounts, name="Amount"), row=1, col=1)
+        # Convert to list for Plotly
+        amounts_list = amounts_array.tolist()
+        prob_amounts_list = [float(p) for p in prob_amounts]
         
-        # Time impact - explicitly convert to list
-        hours = list(range(24))
+        fig.add_trace(go.Scatter(x=amounts_list, y=prob_amounts_list, name="Amount"), row=1, col=1)
+        
+        # Time impact - use numpy arrays
+        hours_array = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23])
         prob_hours = []
-        for hr in hours:
+        for hr in hours_array:
             temp_transaction = transaction.copy()
-            temp_transaction['trans_hour'] = hr
+            temp_transaction['trans_hour'] = int(hr)
             prob, _ = predict_fraud(temp_transaction, model, scaler)
             prob_hours.append(prob)
         
-        # Ensure hours is a list for Plotly
-        hours_list = list(hours)
-        fig.add_trace(go.Scatter(x=hours_list, y=prob_hours, name="Time"), row=1, col=2)
+        # Convert to list for Plotly
+        hours_list = hours_array.tolist()
+        prob_hours_list = [float(p) for p in prob_hours]
         
-        # Distance impact - explicitly convert to list
-        distances = list(range(0, 1001, 50))
+        fig.add_trace(go.Scatter(x=hours_list, y=prob_hours_list, name="Time"), row=1, col=2)
+        
+        # Distance impact - use numpy arrays
+        distances_array = np.array([0, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950])
         prob_distances = []
-        for dist in distances:
+        for dist in distances_array:
             temp_transaction = transaction.copy()
             temp_transaction['merch_lat'] = transaction['lat'] + (dist/111)
             temp_transaction['merch_long'] = transaction['long'] + (dist/111)
             prob, _ = predict_fraud(temp_transaction, model, scaler)
             prob_distances.append(prob)
         
-        # Ensure distances is a list for Plotly
-        distances_list = list(distances)
-        fig.add_trace(go.Scatter(x=distances_list, y=prob_distances, name="Distance"), row=2, col=1)
+        # Convert to list for Plotly
+        distances_list = distances_array.tolist()
+        prob_distances_list = [float(p) for p in prob_distances]
         
-        # Age impact - explicitly convert to list
-        ages = list(range(18, 81, 5))
+        fig.add_trace(go.Scatter(x=distances_list, y=prob_distances_list, name="Distance"), row=2, col=1)
+        
+        # Age impact - use numpy arrays
+        ages_array = np.array([18, 23, 28, 33, 38, 43, 48, 53, 58, 63, 68, 73, 78])
         prob_ages = []
-        for age_val in ages:
+        for age_val in ages_array:
             temp_transaction = transaction.copy()
-            temp_transaction['age'] = age_val
+            temp_transaction['age'] = int(age_val)
             prob, _ = predict_fraud(temp_transaction, model, scaler)
             prob_ages.append(prob)
         
-        # Ensure ages is a list for Plotly
-        ages_list = list(ages)
-        fig.add_trace(go.Scatter(x=ages_list, y=prob_ages, name="Age"), row=2, col=2)
+        # Convert to list for Plotly
+        ages_list = ages_array.tolist()
+        prob_ages_list = [float(p) for p in prob_ages]
+        
+        fig.add_trace(go.Scatter(x=ages_list, y=prob_ages_list, name="Age"), row=2, col=2)
         
         fig.update_layout(height=600, showlegend=False)
         st.plotly_chart(fig, use_container_width=True)
@@ -548,21 +557,21 @@ def scenario_explorer():
         st.error(f"❌ Error generating scenario analysis: {str(e)}")
         st.info("💡 Using fallback data for demonstration.")
         
-        # Create a simple fallback visualization
+        # Create a simple fallback visualization with bulletproof data
         import numpy as np
         
-        # Generate sample data for demonstration - explicitly use lists
-        amounts = list(range(1, 1001, 50))
-        prob_amounts = [0.05 + 0.1 * (amt/1000) for amt in amounts]
+        # Generate sample data for demonstration - use numpy arrays
+        amounts_array = np.array([1, 51, 101, 151, 201, 251, 301, 351, 401, 451, 501, 551, 601, 651, 701, 751, 801, 851, 901, 951])
+        prob_amounts = [0.05 + 0.1 * (amt/1000) for amt in amounts_array]
         
-        hours = list(range(24))
-        prob_hours = [0.08 + 0.04 * np.sin(h/24 * 2 * np.pi) for h in hours]
+        hours_array = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23])
+        prob_hours = [0.08 + 0.04 * np.sin(h/24 * 2 * np.pi) for h in hours_array]
         
-        distances = list(range(0, 1001, 50))
-        prob_distances = [0.06 + 0.12 * (dist/1000) for dist in distances]
+        distances_array = np.array([0, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950])
+        prob_distances = [0.06 + 0.12 * (dist/1000) for dist in distances_array]
         
-        ages = list(range(18, 81, 5))
-        prob_ages = [0.07 + 0.03 * np.sin((age-18)/63 * 2 * np.pi) for age in ages]
+        ages_array = np.array([18, 23, 28, 33, 38, 43, 48, 53, 58, 63, 68, 73, 78])
+        prob_ages = [0.07 + 0.03 * np.sin((age-18)/63 * 2 * np.pi) for age in ages_array]
         
         try:
             fig = make_subplots(
@@ -572,11 +581,11 @@ def scenario_explorer():
                        [{"secondary_y": False}, {"secondary_y": False}]]
             )
             
-            # Ensure all data is explicitly converted to lists
-            fig.add_trace(go.Scatter(x=list(amounts), y=prob_amounts, name="Amount"), row=1, col=1)
-            fig.add_trace(go.Scatter(x=list(hours), y=prob_hours, name="Time"), row=1, col=2)
-            fig.add_trace(go.Scatter(x=list(distances), y=prob_distances, name="Distance"), row=2, col=1)
-            fig.add_trace(go.Scatter(x=list(ages), y=prob_ages, name="Age"), row=2, col=2)
+            # Convert all to lists for Plotly
+            fig.add_trace(go.Scatter(x=amounts_array.tolist(), y=prob_amounts, name="Amount"), row=1, col=1)
+            fig.add_trace(go.Scatter(x=hours_array.tolist(), y=prob_hours, name="Time"), row=1, col=2)
+            fig.add_trace(go.Scatter(x=distances_array.tolist(), y=prob_distances, name="Distance"), row=2, col=1)
+            fig.add_trace(go.Scatter(x=ages_array.tolist(), y=prob_ages, name="Age"), row=2, col=2)
             
             fig.update_layout(height=600, showlegend=False)
             st.plotly_chart(fig, use_container_width=True)
