@@ -488,7 +488,7 @@ def scenario_explorer():
                    [{"secondary_y": False}, {"secondary_y": False}]]
         )
         
-        # Amount impact
+        # Amount impact - explicitly convert to list
         amounts = list(range(1, 1001, 50))
         prob_amounts = []
         for amt in amounts:
@@ -497,9 +497,11 @@ def scenario_explorer():
             prob, _ = predict_fraud(temp_transaction, model, scaler)
             prob_amounts.append(prob)
         
-        fig.add_trace(go.Scatter(x=amounts, y=prob_amounts, name="Amount"), row=1, col=1)
+        # Ensure amounts is a list for Plotly
+        amounts_list = list(amounts)
+        fig.add_trace(go.Scatter(x=amounts_list, y=prob_amounts, name="Amount"), row=1, col=1)
         
-        # Time impact
+        # Time impact - explicitly convert to list
         hours = list(range(24))
         prob_hours = []
         for hr in hours:
@@ -508,9 +510,11 @@ def scenario_explorer():
             prob, _ = predict_fraud(temp_transaction, model, scaler)
             prob_hours.append(prob)
         
-        fig.add_trace(go.Scatter(x=hours, y=prob_hours, name="Time"), row=1, col=2)
+        # Ensure hours is a list for Plotly
+        hours_list = list(hours)
+        fig.add_trace(go.Scatter(x=hours_list, y=prob_hours, name="Time"), row=1, col=2)
         
-        # Distance impact
+        # Distance impact - explicitly convert to list
         distances = list(range(0, 1001, 50))
         prob_distances = []
         for dist in distances:
@@ -520,9 +524,11 @@ def scenario_explorer():
             prob, _ = predict_fraud(temp_transaction, model, scaler)
             prob_distances.append(prob)
         
-        fig.add_trace(go.Scatter(x=distances, y=prob_distances, name="Distance"), row=2, col=1)
+        # Ensure distances is a list for Plotly
+        distances_list = list(distances)
+        fig.add_trace(go.Scatter(x=distances_list, y=prob_distances, name="Distance"), row=2, col=1)
         
-        # Age impact
+        # Age impact - explicitly convert to list
         ages = list(range(18, 81, 5))
         prob_ages = []
         for age_val in ages:
@@ -531,7 +537,9 @@ def scenario_explorer():
             prob, _ = predict_fraud(temp_transaction, model, scaler)
             prob_ages.append(prob)
         
-        fig.add_trace(go.Scatter(x=ages, y=prob_ages, name="Age"), row=2, col=2)
+        # Ensure ages is a list for Plotly
+        ages_list = list(ages)
+        fig.add_trace(go.Scatter(x=ages_list, y=prob_ages, name="Age"), row=2, col=2)
         
         fig.update_layout(height=600, showlegend=False)
         st.plotly_chart(fig, use_container_width=True)
@@ -543,7 +551,7 @@ def scenario_explorer():
         # Create a simple fallback visualization
         import numpy as np
         
-        # Generate sample data for demonstration
+        # Generate sample data for demonstration - explicitly use lists
         amounts = list(range(1, 1001, 50))
         prob_amounts = [0.05 + 0.1 * (amt/1000) for amt in amounts]
         
@@ -564,10 +572,11 @@ def scenario_explorer():
                        [{"secondary_y": False}, {"secondary_y": False}]]
             )
             
-            fig.add_trace(go.Scatter(x=amounts, y=prob_amounts, name="Amount"), row=1, col=1)
-            fig.add_trace(go.Scatter(x=hours, y=prob_hours, name="Time"), row=1, col=2)
-            fig.add_trace(go.Scatter(x=distances, y=prob_distances, name="Distance"), row=2, col=1)
-            fig.add_trace(go.Scatter(x=ages, y=prob_ages, name="Age"), row=2, col=2)
+            # Ensure all data is explicitly converted to lists
+            fig.add_trace(go.Scatter(x=list(amounts), y=prob_amounts, name="Amount"), row=1, col=1)
+            fig.add_trace(go.Scatter(x=list(hours), y=prob_hours, name="Time"), row=1, col=2)
+            fig.add_trace(go.Scatter(x=list(distances), y=prob_distances, name="Distance"), row=2, col=1)
+            fig.add_trace(go.Scatter(x=list(ages), y=prob_ages, name="Age"), row=2, col=2)
             
             fig.update_layout(height=600, showlegend=False)
             st.plotly_chart(fig, use_container_width=True)
