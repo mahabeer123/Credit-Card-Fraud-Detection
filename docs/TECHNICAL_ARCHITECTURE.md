@@ -100,232 +100,185 @@ Validation → Cleaning → Feature Selection → Model Selection → Real-time
 
 3. 🎯 Feature Engineering
    ├── Temporal features (hour, day, month)
-   ├── Geographic features (distance calculation)
-   ├── Demographic features (age)
-   └── Derived features (risk scores)
+   ├── Geographic distance calculation
+   ├── Age calculation
+   └── Categorical encoding
 
-4. ⚖️ Data Balancing
-   ├── Class imbalance analysis
-   ├── SMOTE implementation
-   └── Manual balancing (50:50 ratio)
+4. ⚖️ Feature Scaling
+   ├── StandardScaler for numerical features
+   ├── LabelEncoder for categorical features
+   └── Feature normalization
 
-5. 🤖 Model Training
-   ├── Multiple algorithm testing
-   ├── Hyperparameter tuning
-   ├── Cross-validation
-   └── Model selection
+5. ⚖️ Class Balancing
+   ├── Manual balancing (50:50 ratio)
+   ├── Stratified sampling
+   └── Balanced training set
 
-6. 📊 Evaluation
-   ├── Performance metrics
-   ├── ROC-AUC analysis
-   ├── Confusion matrix
-   └── SHAP explainability
+6. 🤖 Model Training
+   ├── Random Forest (best performer)
+   ├── Decision Tree
+   ├── Logistic Regression
+   └── Cross-validation
 
-7. 🚀 Deployment
-   ├── Model serialization
-   ├── Web application
-   └── Real-time prediction
+7. 📊 Model Evaluation
+   ├── ROC-AUC scoring
+   ├── Precision-Recall curves
+   ├── Confusion matrices
+   └── Feature importance
+
+8. 🔍 Model Explainability
+   ├── SHAP analysis
+   ├── Feature importance plots
+   └── Model interpretability
+```
+
+### **Key Files in ML Pipeline**
+- **`src/models/comprehensive_pipeline_simple.py`** - Complete ML pipeline
+- **`src/models/save_models.py`** - Model training and saving
+- **`notebooks/01_exploratory_data_analysis.ipynb`** - EDA analysis
+- **`notebooks/02_cnn_model.ipynb`** - Deep learning approach
+- **`notebooks/03_lstm_model.ipynb`** - LSTM model
+
+---
+
+## 🎯 Feature Engineering
+
+### **Temporal Features**
+```python
+# Extract time-based features
+data['trans_hour'] = data['trans_date_trans_time'].dt.hour
+data['trans_day_of_week'] = data['trans_date_trans_time'].dt.day_name()
+data['trans_month'] = data['trans_date_trans_time'].dt.month
+```
+
+### **Geographic Features**
+```python
+# Calculate distance between customer and merchant
+from geopy.distance import great_circle
+
+data['distance'] = data.apply(lambda row: great_circle(
+    (row['lat'], row['long']), 
+    (row['merch_lat'], row['merch_long'])
+).kilometers, axis=1)
+```
+
+### **Demographic Features**
+```python
+# Calculate customer age
+data['age'] = np.round((data['trans_date_trans_time'] - data['dob'])/np.timedelta64(1, 'Y'))
+```
+
+---
+
+## 🤖 Model Architecture
+
+### **Random Forest (Best Performer)**
+```python
+from sklearn.ensemble import RandomForestClassifier
+
+rf_model = RandomForestClassifier(
+    n_estimators=200,
+    random_state=42,
+    n_jobs=-1,
+    max_depth=15,
+    min_samples_split=20,
+    min_samples_leaf=10
+)
 ```
 
 ### **Model Performance Comparison**
 | Model | ROC-AUC | Recall | Precision | F1-Score | Training Time |
 |-------|---------|--------|-----------|----------|---------------|
-| Random Forest | 0.9604 | 0.9196 | 0.0132 | 0.0260 | 0.51s |
+| **Random Forest** | 0.9604 | 0.9196 | 0.0132 | 0.0260 | 0.51s |
 | Decision Tree | 0.9429 | 0.8750 | 0.0126 | 0.0249 | 0.11s |
 | Logistic Regression | 0.6131 | 0.4643 | 0.0025 | 0.0049 | 0.11s |
 
 ---
 
-## 🔬 Feature Engineering
-
-### **Temporal Features**
-```python
-# Time-based features
-df['trans_hour'] = df['unix_time'].dt.hour
-df['trans_day_of_week'] = df['unix_time'].dt.dayofweek
-df['trans_month'] = df['unix_time'].dt.month
-df['trans_year_month'] = df['unix_time'].dt.to_period('M')
-```
-
-### **Geographic Features**
-```python
-# Distance calculation using great circle distance
-from geopy.distance import great_circle
-
-def calculate_distance(lat1, long1, lat2, long2):
-    return great_circle((lat1, long1), (lat2, long2)).kilometers
-
-df['distance'] = df.apply(lambda row: 
-    calculate_distance(row['lat'], row['long'], 
-                     row['merch_lat'], row['merch_long']), axis=1)
-```
-
-### **Demographic Features**
-```python
-# Age calculation from birth year
-df['age'] = current_year - df['birth_year']
-```
-
-### **Feature Importance Analysis**
-1. **Transaction Amount** (37.75%) - Primary risk indicator
-2. **Transaction Hour** (31.80%) - Temporal patterns
-3. **Unix Time** (4.84%) - Temporal features
-4. **Transaction Month** (3.00%) - Seasonal patterns
-5. **City Population** (2.92%) - Geographic context
-
----
-
-## 🧠 Model Architecture
-
-### **Random Forest Implementation**
-```python
-from sklearn.ensemble import RandomForestClassifier
-
-# Model configuration
-rf_model = RandomForestClassifier(
-    n_estimators=100,        # Number of trees
-    max_depth=10,            # Maximum tree depth
-    min_samples_split=5,     # Minimum samples to split
-    min_samples_leaf=2,      # Minimum samples per leaf
-    random_state=42,         # Reproducibility
-    n_jobs=-1               # Parallel processing
-)
-```
-
-### **Model Training Process**
-1. **Data Splitting**: 80% training, 20% testing
-2. **Cross-Validation**: 5-fold CV for robust evaluation
-3. **Hyperparameter Tuning**: Grid search optimization
-4. **Model Selection**: Best performing model based on ROC-AUC
-
-### **Model Persistence**
-```python
-import joblib
-
-# Save trained model
-joblib.dump(model, 'random_forest_model.pkl')
-joblib.dump(scaler, 'scaler.pkl')
-
-# Load model for prediction
-model = joblib.load('random_forest_model.pkl')
-scaler = joblib.load('scaler.pkl')
-```
-
----
-
 ## ⚡ Performance Optimization
 
-### **Training Optimization**
-- **Parallel Processing**: Multi-core CPU utilization
-- **Memory Management**: Efficient data structures
-- **Algorithm Selection**: Fastest converging algorithms
-- **Feature Selection**: Reduced dimensionality
+### **Data Processing Optimization**
+- **Sampling**: Use 300K samples for faster processing
+- **Vectorization**: NumPy operations for speed
+- **Memory Management**: Efficient data types
+- **Parallel Processing**: Multi-core training
 
-### **Inference Optimization**
-- **Model Caching**: Pre-loaded models in memory
-- **Batch Processing**: Efficient bulk predictions
-- **Real-time Processing**: Sub-second response times
-- **Error Handling**: Robust fallback mechanisms
-
-### **Performance Metrics**
-- **Training Time**: 0.51 seconds
-- **Prediction Time**: <100ms per transaction
-- **Memory Usage**: <500MB for full application
-- **Scalability**: Handles 1000+ transactions/second
+### **Model Optimization**
+- **Hyperparameter Tuning**: Grid search optimization
+- **Feature Selection**: Importance-based selection
+- **Class Balancing**: Manual balancing for better performance
+- **Cross-validation**: Stratified k-fold validation
 
 ---
 
 ## 🚀 Deployment Architecture
 
-### **Streamlit Cloud Deployment**
+### **Streamlit Application**
 ```
-GitHub Repository → Streamlit Cloud → Live Web Application
-      │                    │                    │
-      ▼                    ▼                    ▼
-   Code Push         Auto Deployment      User Access
-```
-
-### **Application Structure**
-```
-src/
-├── app.py                    # Main Streamlit application
-├── models/
-│   ├── save_models_standalone.py  # Model training
-│   └── comprehensive_pipeline_simple.py  # ML pipeline
-└── utils/
-    ├── data_loader.py       # Data loading utilities
-    ├── feature_engineering.py  # Feature engineering
-    └── visualization.py     # Plotting utilities
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   User Input    │───▶│  Streamlit App  │───▶│  Model Prediction│
+│                 │    │                 │    │                 │
+│ • Transaction   │    │ • Real-time     │    │ • Fraud Score   │
+│ • Parameters    │    │ • Interactive   │    │ • Risk Level    │
+│ • Batch Data    │    │ • Visualization │    │ • Explanation   │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-### **Deployment Pipeline**
-1. **Code Development**: Local development and testing
-2. **Version Control**: Git-based workflow
-3. **Continuous Integration**: Automated testing
-4. **Deployment**: Streamlit Cloud automatic deployment
-5. **Monitoring**: Performance and error tracking
+### **Key Application Features**
+- **Live Fraud Monitor**: Real-time transaction monitoring
+- **Fraud Detective Game**: Interactive learning experience
+- **Scenario Explorer**: What-if analysis
+- **Batch Analysis**: CSV processing
+
+### **Deployment Files**
+- **`src/app.py`** - Main Streamlit application
+- **`run_demo.py`** - One-click launcher
+- **`requirements.txt`** - Python dependencies
 
 ---
 
 ## 🔒 Security Considerations
 
 ### **Data Security**
-- **Anonymization**: Credit card numbers are masked
-- **Encryption**: Sensitive data encryption in transit
-- **Access Control**: Repository access management
-- **Compliance**: GDPR and financial regulations
-
-### **Application Security**
-- **Input Validation**: Sanitized user inputs
-- **Error Handling**: Secure error messages
-- **Rate Limiting**: Prevent abuse
-- **HTTPS**: Secure communication
+- **PII Protection**: Anonymized data handling
+- **Encryption**: Secure data transmission
+- **Access Control**: Authentication mechanisms
+- **Audit Logging**: Transaction monitoring
 
 ### **Model Security**
-- **Model Validation**: Input data validation
-- **Prediction Limits**: Bounded output ranges
-- **Audit Trail**: Prediction logging
+- **Model Validation**: Input validation
+- **Rate Limiting**: API usage limits
+- **Error Handling**: Secure error messages
 - **Version Control**: Model versioning
 
 ---
 
-## 📈 Scalability & Maintenance
+## 📊 Monitoring and Maintenance
 
-### **Horizontal Scaling**
-- **Load Balancing**: Multiple application instances
-- **Database Scaling**: Distributed data storage
-- **Caching**: Redis for session management
-- **CDN**: Content delivery optimization
+### **Performance Monitoring**
+- **Model Performance**: Regular evaluation
+- **System Health**: Application monitoring
+- **User Feedback**: Continuous improvement
+- **Data Quality**: Ongoing validation
 
-### **Vertical Scaling**
-- **Resource Optimization**: CPU/Memory tuning
-- **Model Optimization**: Algorithm improvements
-- **Feature Engineering**: Enhanced feature set
-- **Performance Monitoring**: Real-time metrics
-
-### **Maintenance Strategy**
-- **Regular Updates**: Dependency updates
-- **Model Retraining**: Periodic model updates
-- **Performance Monitoring**: Continuous monitoring
-- **Backup Strategy**: Data and model backups
+### **Maintenance Schedule**
+- **Weekly**: Performance reviews
+- **Monthly**: Model retraining
+- **Quarterly**: Feature updates
+- **Annually**: Architecture review
 
 ---
 
 ## 🎯 Future Enhancements
 
 ### **Planned Improvements**
-1. **Deep Learning Models**: CNN/LSTM implementations
-2. **Real-time Streaming**: Apache Kafka integration
-3. **Advanced Analytics**: Real-time dashboards
-4. **API Development**: RESTful API endpoints
-5. **Mobile Application**: React Native app
+- **Real-time API**: RESTful API development
+- **Advanced Models**: Deep learning integration
+- **Mobile App**: Cross-platform application
+- **Cloud Deployment**: Scalable infrastructure
 
 ### **Research Areas**
-- **Ensemble Methods**: Advanced ensemble techniques
-- **Feature Selection**: Automated feature selection
-- **Hyperparameter Optimization**: Bayesian optimization
-- **Model Interpretability**: Advanced SHAP analysis
-
----
-
-*This technical architecture demonstrates enterprise-level ML system design and implementation.* 
+- **Anomaly Detection**: Unsupervised learning
+- **Time Series**: Temporal pattern analysis
+- **Graph Neural Networks**: Relationship modeling
+- **Federated Learning**: Privacy-preserving ML 

@@ -20,7 +20,7 @@
 
 ## 🎯 **Executive Summary**
 
-This project demonstrates a **production-ready credit card fraud detection system** with **ROC-AUC of 0.96** and **91.96% recall**. Built with modern ML practices, it features an interactive web application showcasing real-time fraud detection capabilities.
+This project demonstrates a **production-ready credit card fraud detection system** with **ROC-AUC of 0.96** and **91.96% recall**. Built with modern ML practices using **Python**, it features an interactive web application showcasing real-time fraud detection capabilities.
 
 ### 🏆 **Key Achievements**
 - **🎯 ROC-AUC: 0.9604** (Industry-standard excellence)
@@ -68,7 +68,7 @@ python run_demo.py
 pip install -r requirements.txt
 
 # Train models
-python src/models/save_models_standalone.py
+python src/models/save_models.py
 
 # Launch demo
 streamlit run src/app.py
@@ -127,20 +127,41 @@ streamlit run src/app.py
 ```
 Credit-Card-Fraud-Detection/
 ├── 📊 data/                           # Dataset files
-├── 🤖 src/
-│   ├── 📱 app.py                     # Interactive Streamlit demo
-│   └── models/
-│       ├── 🧠 save_models_standalone.py  # Model training
-│       └── 📊 comprehensive_pipeline_simple.py  # ML pipeline
-├── 📈 visualizations/                 # Generated plots
-├── 📚 notebooks/                     # Jupyter analysis
+├── 📚 docs/                          # Documentation
+│   ├── API_DOCUMENTATION.md
+│   ├── PROJECT_SHOWCASE.md
+│   └── TECHNICAL_ARCHITECTURE.md
+├── 🤖 models/                        # Trained models
+├── 📈 notebooks/                     # Jupyter notebooks (Python)
+│   ├── 00_feature_engineering_analysis.ipynb
 │   ├── 01_exploratory_data_analysis.ipynb
 │   ├── 02_cnn_model.ipynb
 │   └── 03_lstm_model.ipynb
-├── 🚀 run_demo.py                    # One-click launcher
-├── 📋 requirements.txt               # Dependencies
-├── 📄 LICENSE                        # MIT License
-└── 📖 CONTRIBUTING.md               # Contribution guide
+├── 🖼️ PIC/                          # Model performance images
+│   ├── CNN/
+│   ├── DT/
+│   ├── LR/
+│   ├── LSTM/
+│   └── RF/
+├── 🚀 src/                          # Python source code
+│   ├── 📱 app.py                    # Interactive Streamlit demo
+│   ├── 🤖 models/                   # Python ML models
+│   │   ├── comprehensive_pipeline.py
+│   │   ├── comprehensive_pipeline_fixed.py
+│   │   ├── comprehensive_pipeline_simple.py
+│   │   ├── random_forest_model.pkl
+│   │   ├── save_models.py
+│   │   ├── scaler.pkl
+│   │   └── train_models.py
+│   ├── 🛠️ utils/
+│   └── 📊 visualization/
+├── 📈 visualizations/               # Generated plots
+├── 📋 requirements.txt              # Python dependencies
+├── 🚀 run_demo.py                   # Python launcher
+├── 🤖 save_models_standalone.py     # Python model training
+├── 📖 README.md                     # Project overview
+├── 📄 LICENSE                       # MIT License
+└── 🤝 CONTRIBUTING.md               # Contribution guide
 ```
 
 ---
